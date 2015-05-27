@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #**********************************************************************
-# Version 1.0  - 05/22/2015 - Written by Jeremy Georges -Initial Script
-#
+# pfctest.py - Written by Jeremy Georges
+# Version 1.0  - 05/22/2015 - Initial Script
+# Version 1.1  - 05/23/2015 -  Fixed minor parse bug
+# version 1.2  - 05/27/2015 - Changed Time class range to use full 2 bytes (dec 0-65535)
 #***********************************************************************
 
 """
@@ -39,6 +41,8 @@ Note: Time in quanta where each quantum represents time it takes to transmit 512
 
 Each block above from Ethertype down is 16bits (2 octets)
 
+If Class enable Vector set, but time set for class is 0, this tells remote stations to unpause for that class.
+
 """
 
 #===========================================================
@@ -75,7 +79,7 @@ def checksum(msg):
      
     return s
 
-
+   
 #============================
 # MAIN
 #============================
@@ -95,11 +99,11 @@ def main():
     parser.add_option("--q0", type="int", dest="quanta0", help="Time in Quanta for Class 0",metavar="Quanta")
     parser.add_option("--q1", type="int", dest="quanta1", help="Time in Quanta for Class 1",metavar="Quanta")
     parser.add_option("--q2", type="int", dest="quanta2", help="Time in Quanta for Class 2",metavar="Quanta")
-    parser.add_option("--q4", type="int", dest="quanta3", help="Time in Quanta for Class 3",metavar="Quanta")
-    parser.add_option("--q5", type="int", dest="quanta4", help="Time in Quanta for Class 4",metavar="Quanta")
-    parser.add_option("--q6", type="int", dest="quanta5", help="Time in Quanta for Class 5",metavar="Quanta")
-    parser.add_option("--q7", type="int", dest="quanta6", help="Time in Quanta for Class 6",metavar="Quanta")
-    parser.add_option("--q8", type="int", dest="quanta7", help="Time in Quanta for Class 7",metavar="Quanta")
+    parser.add_option("--q3", type="int", dest="quanta3", help="Time in Quanta for Class 3",metavar="Quanta")
+    parser.add_option("--q4", type="int", dest="quanta4", help="Time in Quanta for Class 4",metavar="Quanta")
+    parser.add_option("--q5", type="int", dest="quanta5", help="Time in Quanta for Class 5",metavar="Quanta")
+    parser.add_option("--q6", type="int", dest="quanta6", help="Time in Quanta for Class 6",metavar="Quanta")
+    parser.add_option("--q7", type="int", dest="quanta7", help="Time in Quanta for Class 7",metavar="Quanta")
     parser.add_option("-i", "--iteration", type="int", dest="iteration", help="Number of times to iterate",metavar="number",default=1)
     (options, args) = parser.parse_args()
 
@@ -120,11 +124,8 @@ def main():
         
     s.bind((options.interface, 0))
 
-    # We're putting together an ethernet frame here, 
-    # but you could have anything you want instead
-    # Have a look at the 'struct' module for more 
-    # flexible packing/unpacking of binary data
-    # and 'binascii' for 32 bit CRC
+    # Put together an ethernet frame here, using ASCII literals 
+ 
     src_addr = "\x01\x02\x03\x04\x05\x06"
     dst_addr = "\x01\x80\xC2\x00\x00\x01"
     opcode = "\x01\x01"
@@ -158,7 +159,7 @@ def main():
     if options.p7:
         classvectorbyteLower=0b10000000+classvectorbyteLower  
     #Need to covert to a string with escaped hex literal  
-    classvectorbyteLower = binascii.unhexlify(str(hex(classvectorbyteLower)).strip('0x'))
+    classvectorbyteLower = binascii.unhexlify(str(hex(classvectorbyteLower)).replace('0x',''))
     #Concatenate the full enable vector two bytes.
     classvector = classvectorbyteUpper + classvectorbyteLower
    
@@ -169,85 +170,109 @@ def main():
     classtimebyteUpper="\x00"  
     
     if options.quanta0:
-        if options.quanta0 < 256: 
-            pfc0=classtimebyteUpper+binascii.unhexlify(hex(options.quanta0).strip('0x'))
+        if options.quanta0 <= 65535:
+            #If its greater than 255, unhexlify will provide full hex for each byte
+            #If its less than 255, then we need to prepend a 0 value for the high order byte
+            if options.quanta0 > 255:
+                pfc0=binascii.unhexlify(format(options.quanta0, '#06x').replace('0x',''))
+            else:     
+                pfc0=classtimebyteUpper+binascii.unhexlify(format(options.quanta0, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc0="\x00\x00"    
-        
     if options.quanta1:
-        if options.quanta1 < 256: 
-            pfc1=classtimebyteUpper+binascii.unhexlify(hex(options.quanta1).strip('0x'))
+        if options.quanta1 <= 65535:
+            if options.quanta1 > 255:
+               pfc1=binascii.unhexlify(format(options.quanta1, '#06x').replace('0x',''))
+            else:     
+                pfc1=classtimebyteUpper+binascii.unhexlify(format(options.quanta1, '#04x').replace('0x',''))  
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc1="\x00\x00"  
             
     if options.quanta2:
-        if options.quanta2 < 256: 
-            pfc2=classtimebyteUpper+binascii.unhexlify(hex(options.quanta2).strip('0x'))
+        if options.quanta2 <= 65535:
+            if options.quanta2 > 255:
+                pfc2=binascii.unhexlify(format(options.quanta2, '#06x').replace('0x',''))
+            else:     
+                pfc2=classtimebyteUpper+binascii.unhexlify(format(options.quanta2, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc2="\x00\x00"
    
     if options.quanta3:
-        if options.quanta3 < 256: 
-            pfc3=classtimebyteUpper+binascii.unhexlify(hex(options.quanta3).strip('0x'))
+        if options.quanta3 <= 65535:
+            if options.quanta3 > 255:
+                pfc3=binascii.unhexlify(format(options.quanta3, '#06x').replace('0x',''))
+            else:     
+                pfc3=classtimebyteUpper+binascii.unhexlify(format(options.quanta3, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc3="\x00\x00"
 
     if options.quanta4:
-        if options.quanta4 < 256: 
-            pfc4=classtimebyteUpper+binascii.unhexlify(hex(options.quanta4).strip('0x'))
+        if options.quanta4 <= 65535: 
+            if options.quanta4 > 255:
+                pfc4=binascii.unhexlify(format(options.quanta4, '#06x').replace('0x',''))
+            else:     
+                pfc4=classtimebyteUpper+binascii.unhexlify(format(options.quanta4, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc4="\x00\x00"
         
     if options.quanta5:
-        if options.quanta5 < 256: 
-            pfc5=classtimebyteUpper+binascii.unhexlify(hex(options.quanta5).strip('0x'))
+        if options.quanta5 <= 65535:
+            if options.quanta5 > 255:
+                pfc5=binascii.unhexlify(format(options.quanta5, '#06x').replace('0x',''))
+            else:     
+                pfc5=classtimebyteUpper+binascii.unhexlify(format(options.quanta5, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc5="\x00\x00"
-        
     if options.quanta6:
-        if options.quanta6 < 256: 
-            pfc6=classtimebyteUpper+binascii.unhexlify(hex(options.quanta6).strip('0x'))
+        if options.quanta6 <= 65535:
+            if options.quanta6 > 255:
+                pfc6=binascii.unhexlify(format(options.quanta6, '#06x').replace('0x',''))
+            else:     
+                pfc6=classtimebyteUpper+binascii.unhexlify(format(options.quanta6, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc6="\x00\x00"
         
     if options.quanta7:
-        if options.quanta7 < 256: 
-            pfc7=classtimebyteUpper+binascii.unhexlify(hex(options.quanta7).strip('0x'))
+        if options.quanta7 <= 65535:
+            if options.quanta7 > 255:
+                pfc7=binascii.unhexlify(format(options.quanta7, '#06x').replace('0x',''))
+            else:     
+                pfc7=classtimebyteUpper+binascii.unhexlify(format(options.quanta7, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 255"
+            print "Not a valid quanta value. But be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc7="\x00\x00"
-        
+    
     fullpacket=dst_addr+src_addr+ethertype+opcode+classvector+pfc0+pfc1+pfc2+pfc3+pfc4+pfc5+pfc6+pfc7
     x = checksum(fullpacket) 
 
