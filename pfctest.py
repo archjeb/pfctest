@@ -4,6 +4,7 @@
 # Version 1.0  - 05/22/2015 - Initial Script
 # Version 1.1  - 05/23/2015 -  Fixed minor parse bug
 # version 1.2  - 05/27/2015 - Changed Time class range to use full 2 bytes (dec 0-65535)
+# version 1.3  - 06/03/2015 - Fix an issue with the class parsing if Class Enable Vector didn't add up to to even two digit hex value
 #***********************************************************************
 
 """
@@ -159,7 +160,14 @@ def main():
     if options.p7:
         classvectorbyteLower=0b10000000+classvectorbyteLower  
     #Need to covert to a string with escaped hex literal  
-    classvectorbyteLower = binascii.unhexlify(str(hex(classvectorbyteLower)).replace('0x',''))
+   
+    #In the previous release this was
+    #classvectorbyteLower = binascii.unhexlify(str(hex(classvectorbyteLower)).replace('0x',''))
+    #but if the decimal value was below 8, we didn't have enough digits for unhexlify. So we'll do 
+    #this hack to pad our number so its 2 hex digits, then we'll strip the 0x for our literal ascii
+    classvectorbyteLower=binascii.unhexlify(format(classvectorbyteLower, '#04x').replace('0x',''))
+
+    
     #Concatenate the full enable vector two bytes.
     classvector = classvectorbyteUpper + classvectorbyteLower
    
