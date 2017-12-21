@@ -1,4 +1,4 @@
-#pfctest
+# pfctest
 
 
 The purpose of this script is to provide an easy way to test priority-based flow control, as defined in the IEEE 802.1Qbb standard.
@@ -6,10 +6,10 @@ This allows Network Engineers and other technical staff a way to easily test the
 that various PFC quanta values can have.  
 
 
-#Author
+# Author
 Jeremy Georges 
 
-#Description
+# Description
 
 pfctest creates pfc packets based on a quanta value per traffic class.
 The purpose of this tool is it help Network Engineers and other technical staff to test their PFC implementation on their
@@ -47,7 +47,7 @@ Each block above from Ethertype down is 16bits (2 octets)
 Sending a quanta of 0 for a specific class tells a receiver that it can 'unpause' explictly for that class. 
 
 
-#Usage
+# Usage
 
 pfctest.py requires a few arguments. The egress interface must be specified and a PFC class. The Quanta value can be 
 from 0 - 65535. 
@@ -85,4 +85,4 @@ is only one packet.
 
 
 
-
+Additionally, please note that this script only supports Python 2.6/2.7 and Linux.
