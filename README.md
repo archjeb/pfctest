@@ -75,11 +75,10 @@ is only one packet.
        --q1=Quanta           Time in Quanta for Class 1
        --q2=Quanta           Time in Quanta for Class 2
        --q3=Quanta           Time in Quanta for Class 3
-       --q4=Quanta           Time in Quanta for Class 3
-       --q5=Quanta           Time in Quanta for Class 4
-       --q6=Quanta           Time in Quanta for Class 5
-       --q7=Quanta           Time in Quanta for Class 6
-       --q8=Quanta           Time in Quanta for Class 7
+       --q4=Quanta           Time in Quanta for Class 4
+       --q5=Quanta           Time in Quanta for Class 5
+       --q6=Quanta           Time in Quanta for Class 6
+       --q7=Quanta           Time in Quanta for Class 7
        -i number, --iteration=number
                              Number of times to iterate
 
