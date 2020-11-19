@@ -40,8 +40,10 @@ The Ethernet Frame format for PFC packets is the following:
                      -------------------------
 
 
-Note: Time in quanta where each quantum represents time it takes to transmit 512 bits at the current network speed. For example, fast ethernet
-takes 10ns per bit, Gb Ethernet is 1ns and 10G is 0.1 nano second per bit time.
+Note: Time in quanta where each quantum represents time it takes to transmit 512 bits at the current network speed. For example, Fast Ethernet
+takes 10ns per bit, Gb Ethernet is 1ns and 10Gb is 0.1ns per bit time. So if quanta is set to max of 65535 for a 10Gb link PFC class,
+then 0.1(512)*65535 = 3.3ms pause time.
+
 
 Each block above from Ethertype down is 16bits (2 octets)
 
