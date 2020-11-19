@@ -40,7 +40,8 @@ The Ethernet Frame format for PFC packets is the following:
                      -------------------------
 
 
-Note: Time in quanta where each quantum represents time it takes to transmit 512 bits at the current network speed.
+Note: Time in quanta where each quantum represents time it takes to transmit 512 bits at the current network speed. For example, fast ethernet
+takes 10ns per bit, Gb Ethernet is 1ns and 10G is 0.1 nano second per bit time.
 
 Each block above from Ethertype down is 16bits (2 octets)
 
