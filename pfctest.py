@@ -5,7 +5,7 @@
 # Version 1.1  - 05/23/2015 -  Fixed minor parse bug
 # version 1.2  - 05/27/2015 - Changed Time class range to use full 2 bytes (dec 0-65535)
 # version 1.3  - 06/03/2015 - Fix an issue with the class parsing if Class Enable Vector didn't add up to to even two digit hex value
-# version 1.4  - 11/19/2020 - Add frame padding so frame size will be 64bytes 
+# version 1.4  - 11/19/2020 - Add frame padding so frame is 60 bytes plus 4 byte FCS. 
 #***********************************************************************
 
 """
@@ -187,7 +187,7 @@ def main():
             else:     
                 pfc0=classtimebyteUpper+binascii.unhexlify(format(options.quanta0, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -199,7 +199,7 @@ def main():
             else:     
                 pfc1=classtimebyteUpper+binascii.unhexlify(format(options.quanta1, '#04x').replace('0x',''))  
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -212,7 +212,7 @@ def main():
             else:     
                 pfc2=classtimebyteUpper+binascii.unhexlify(format(options.quanta2, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -225,7 +225,7 @@ def main():
             else:     
                 pfc3=classtimebyteUpper+binascii.unhexlify(format(options.quanta3, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -238,7 +238,7 @@ def main():
             else:     
                 pfc4=classtimebyteUpper+binascii.unhexlify(format(options.quanta4, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -251,7 +251,7 @@ def main():
             else:     
                 pfc5=classtimebyteUpper+binascii.unhexlify(format(options.quanta5, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -263,7 +263,7 @@ def main():
             else:     
                 pfc6=classtimebyteUpper+binascii.unhexlify(format(options.quanta6, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
@@ -276,18 +276,21 @@ def main():
             else:     
                 pfc7=classtimebyteUpper+binascii.unhexlify(format(options.quanta7, '#04x').replace('0x','')) 
         else:
-            print "Not a valid quanta value. But be in the range of 0 - 65535"
+            print "Not a valid quanta value. But should be in the range of 0 - 65535"
             sys.exit(1)
     else: 
         #If no CLI argument, pass a zero value for this class       
         pfc7="\x00\x00"
-   
-    padding="\x00\x00"*12 
+  
+
+    # This will give us 60bytes...assuming ethernet NIC will add the 4byte FCS to frame.
+    # Just in case, we'll add the FCS at the end in case someone is playing around with ethtool and turning that off. 
+    padding="\x00\x00"*10 
     fullpacketfields=dst_addr+src_addr+ethertype+opcode+classvector+pfc0+pfc1+pfc2+pfc3+pfc4+pfc5+pfc6+pfc7+padding
     x = checksum(fullpacketfields) 
     thechecksum=hex(x)
     fullrawpacket = fullpacketfields+thechecksum 
-      
+    print (len(fullrawpacket))  
     print "Generating %s Packet(s)" % options.iteration
     while options.iteration > 0:
         s.send(fullrawpacket)
